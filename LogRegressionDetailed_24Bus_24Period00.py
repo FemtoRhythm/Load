@@ -19,6 +19,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 import math
+import os  # 新增os模块用于路径处理
 
 # 设置随机种子保证可重复性
 np.random.seed(1)  # NumPy随机种子
@@ -236,36 +237,20 @@ print(f"测试集准确率: {test_acc:.2f}%")
 
 # ================== 结果保存 ==================
 # 保存预测结果（二进制状态和概率值）
+# 结果保存路径处理（适配Linux）
 def save_results(filename, data):
     """保存结果到CSV文件"""
+    # 确保目录存在
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
     with open(filename, "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerows(data)
 
+# 图片保存路径处理
+plt.savefig(os.path.join("results", "training_loss_{}_{}.png".format(device,batch_size)))
 
-save_results("commitment24Bus24PrdTestSample_Transformer.csv", test_preds)
-save_results("probabilities24Bus24PrdTestSample_Transformer.csv",
-             #model(x_test_tensor.detach().numpy()))
-            model(x_test_tensor.to(device)).detach().cpu().numpy())
-
-
-# 保存训练损失曲线
-plt.figure(figsize=(10, 6))
-plt.plot(train_losses, label='Training Loss')  # 训练损失曲线标签
-plt.xlabel('Epoch')  # X轴标签（训练轮次）
-plt.ylabel('Loss Value')  # Y轴标签（损失值）
-plt.title('Training Loss Curve', fontsize=12, weight='bold')  # 主标题（加粗且字号更大）
-plt.suptitle("Model: SCUC_Transformer    Device: {}    Time: {:.2f}s    Training: {:.2f}    Test accuracy: {:.2f}".format(device, training_time, train_acc, test_acc), x=0.15, ha='left') # 左对齐副标题
-plt.title("Optimizer: Adam | Batch Size: {}".format(batch_size), loc='right', fontsize=10)  # 右对齐参数说明
-plt.ylabel("Loss Value (×10⁻²)")  # 科学计数法单位标注[7](@ref)
-plt.rcParams['font.family'] = 'serif'
-plt.rcParams['font.serif'] = ['Times New Roman']
-plt.legend()
-plt.savefig("training_loss_{}_{}.png".format(device,batch_size))
-plt.close()
-
-# 保存模型权重
-torch.save(model.state_dict(), "power_system_transformer_model.pth")
+# 模型保存路径处理
+torch.save(model.state_dict(), os.path.join("models", "power_system_transformer_model.pth"))
 
 
 # ================== 模型加载函数 ==================
