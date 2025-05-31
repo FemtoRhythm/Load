@@ -246,10 +246,13 @@ def save_results(filename, data):
         writer = csv.writer(f)
         writer.writerows(data)
 
+# 在保存图片前添加目录创建
+os.makedirs("results", exist_ok=True)  # 新增这行
 # 图片保存路径处理
 plt.savefig(os.path.join("results", "training_loss_{}_{}.png".format(device,batch_size)))
 
 # 模型保存路径处理
+os.makedirs("models", exist_ok=True)  # 新增这行
 torch.save(model.state_dict(), os.path.join("models", "power_system_transformer_model.pth"))
 
 
